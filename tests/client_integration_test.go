@@ -14,10 +14,7 @@ import (
 )
 
 func TestClientUsesGoodProxy(t *testing.T) {
-	err := godotenv.Load(".env")
-	if err != nil {
-		t.Fatalf("unable to load .env file: %s", err)
-	}
+	_ = godotenv.Load(".env")
 
 	proxy := os.Getenv("HTTP_PROXY")
 	key := os.Getenv("BETFAIR_KEY_BASE64")
@@ -57,10 +54,7 @@ func TestClientUsesGoodProxy(t *testing.T) {
 }
 
 func TestClientUsesNonAusProxy(t *testing.T) {
-	err := godotenv.Load(".env")
-	if err != nil {
-		t.Fatalf("unable to load .env file: %s", err)
-	}
+	_ = godotenv.Load(".env")
 
 	key := os.Getenv("BETFAIR_KEY_BASE64")
 	cert := os.Getenv("BETFAIR_CERT_BASE64")
@@ -84,7 +78,7 @@ func TestClientUsesNonAusProxy(t *testing.T) {
 		t.Fatalf("betfair client error: %v", err)
 	}
 
-	_, err = client.NewSession(creds, onErrorFunc)
+	_, err := client.NewSession(creds, onErrorFunc)
 	if err == nil {
 		t.Fatal("expected BETTING_RESTRICTED_LOCATION error, got none")
 	}
