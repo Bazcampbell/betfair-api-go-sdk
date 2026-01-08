@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -19,7 +20,7 @@ import (
 
 type BetfairClient struct {
 	client       *http.Client
-	sessionToken string
+	sessionToken atomic.Value
 	creds        types.BetfairCredentials
 
 	mu     sync.RWMutex
@@ -37,6 +38,18 @@ const (
 )
 
 func NewSession(creds types.BetfairCredentials, onError func(error)) (*BetfairClient, error) {
+	if creds.AppKey == "" {
+		return nil, fmt.Errorf("app key cannot be empty")
+	}
+
+	if creds.Username == "" {
+		return nil, fmt.Errorf("username cannot be empty")
+	}
+
+	if creds.Password == "" {
+		return nil, fmt.Errorf("password cannot be empty")
+	}
+
 	certPEM, err := base64.StdEncoding.DecodeString(creds.CertString)
 	if err != nil {
 		return nil, fmt.Errorf("invalid cert string. certificate string must be base64 encoded: %w", err)
@@ -44,7 +57,7 @@ func NewSession(creds types.BetfairCredentials, onError func(error)) (*BetfairCl
 
 	keyPEM, err := base64.StdEncoding.DecodeString(creds.KeyString)
 	if err != nil {
-		return nil, fmt.Errorf("invalid cert string. key string must be base64 encoded: %w", err)
+		return nil, fmt.Errorf("invalid key string. key string must be base64 encoded: %w", err)
 	}
 
 	cert, err := tls.X509KeyPair(certPEM, keyPEM)
@@ -61,6 +74,15 @@ func NewSession(creds types.BetfairCredentials, onError func(error)) (*BetfairCl
 		MaxIdleConns:        100,
 		IdleConnTimeout:     90 * time.Second,
 		TLSHandshakeTimeout: 10 * time.Second,
+	}
+
+	if creds.ProxyUrl != nil {
+		proxyUrl, err := url.Parse(*creds.ProxyUrl)
+		if err != nil {
+			return nil, fmt.Errorf("invalid proxy URL: %w", err)
+		}
+
+		transport.Proxy = http.ProxyURL(proxyUrl)
 	}
 
 	client := http.Client{
@@ -85,28 +107,9 @@ func NewSession(creds types.BetfairCredentials, onError func(error)) (*BetfairCl
 		return nil, fmt.Errorf("unable to login: %w", err)
 	}
 
-	b.sessionToken = sessionToken
+	b.sessionToken.Store(sessionToken)
 
 	return b, nil
-}
-
-// OnError registers a callback for background errors
-// Pass nil to clear the handler
-func (b *BetfairClient) OnError(handler func(error)) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.onError = handler
-}
-
-func (b *BetfairClient) notifyError(err error) {
-	b.mu.RLock()
-	handler := b.onError
-	b.mu.RUnlock()
-
-	if handler != nil {
-		// Non-blocking call
-		go handler(err)
-	}
 }
 
 func (b *BetfairClient) keepAliveTicker() {
@@ -127,7 +130,7 @@ func (b *BetfairClient) keepAliveTicker() {
 
 				if err := b.keepAlive(); err != nil {
 					consecutiveFailures++
-					b.notifyError(fmt.Errorf("keepAlive failed: %w", err))
+					b.onError(fmt.Errorf("keepAlive failed: %w", err))
 
 					// Exponential backoff before reconnect attempt
 					if consecutiveFailures > 1 {
@@ -138,19 +141,15 @@ func (b *BetfairClient) keepAliveTicker() {
 
 					// Try to reconnect
 					if reconnectErr := b.reconnect(); reconnectErr != nil {
-						b.notifyError(fmt.Errorf("reconnect failed (attempt %d/%d): %w",
-							consecutiveFailures, keepAliveRetries, reconnectErr))
-
 						if consecutiveFailures >= keepAliveRetries {
-							b.notifyError(fmt.Errorf("max reconnect attempts reached, closing client"))
+							b.onError(fmt.Errorf("max reconnect attempts reached, closing client"))
 							if err := b.logout(); err != nil {
-								b.notifyError(fmt.Errorf("unable to logout: %w", err))
+								b.onError(fmt.Errorf("unable to logout: %w", err))
 							}
 							b.close()
 							return
 						}
 					} else {
-						// Success! Reset counter
 						consecutiveFailures = 0
 					}
 				} else {
@@ -159,12 +158,26 @@ func (b *BetfairClient) keepAliveTicker() {
 
 			case <-b.ctx.Done():
 				if err := b.logout(); err != nil {
-					b.notifyError(fmt.Errorf("logout failed: %w", err))
+					b.onError(fmt.Errorf("logout failed: %w", err))
 				}
 				return
 			}
 		}
 	}()
+}
+
+func (b *BetfairClient) getSessionToken() (string, error) {
+	val := b.sessionToken.Load()
+	if val == nil {
+		return "", fmt.Errorf("token not initialised")
+	}
+
+	token, ok := val.(string)
+	if !ok {
+		return "", fmt.Errorf("invalid token type")
+	}
+
+	return token, nil
 }
 
 func (b *BetfairClient) reconnect() error {
@@ -173,10 +186,7 @@ func (b *BetfairClient) reconnect() error {
 		return err
 	}
 
-	b.mu.Lock()
-	b.sessionToken = token
-	b.mu.Unlock()
-
+	b.sessionToken.Store(token)
 	return nil
 }
 

@@ -57,6 +57,11 @@ func (b *BetfairClient) login() (string, error) {
 
 // Returns error and assigns session token
 func (b *BetfairClient) keepAlive() error {
+	token, ok := b.sessionToken.Load().(string)
+	if !ok || token == "" {
+		return fmt.Errorf("session token not initialized")
+	}
+
 	keepAliveUrl := BASE_AUTH_URL + "keepAlive"
 
 	req, err := http.NewRequest("POST", keepAliveUrl, nil)
@@ -66,7 +71,7 @@ func (b *BetfairClient) keepAlive() error {
 
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("X-Application", b.creds.AppKey)
-	req.Header.Set("X-Authentication", b.sessionToken)
+	req.Header.Set("X-Authentication", token)
 
 	resp, err := b.client.Do(req)
 	if err != nil {
@@ -86,7 +91,7 @@ func (b *BetfairClient) keepAlive() error {
 	}
 
 	if keepAliveResponse.Status == "SUCCESS" && len(keepAliveResponse.SessionToken) == 44 {
-		b.sessionToken = keepAliveResponse.SessionToken
+		b.sessionToken.Store(keepAliveResponse.SessionToken)
 		return nil
 	}
 
@@ -103,9 +108,14 @@ func (b *BetfairClient) logout() error {
 		return fmt.Errorf("unable to build request: %w", err)
 	}
 
+	token, err := b.getSessionToken()
+	if err != nil {
+		return fmt.Errorf("error getting session token: %w", err)
+	}
+
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("X-Application", b.creds.AppKey)
-	req.Header.Set("X-Authentication", b.sessionToken)
+	req.Header.Set("X-Authentication", token)
 
 	resp, err := b.client.Do(req)
 	if err != nil {

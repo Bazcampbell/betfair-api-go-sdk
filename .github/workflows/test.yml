@@ -1,0 +1,45 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.1'
+          cache: true
+
+      - name: Run unit tests
+        run: go test -v -race ./client
+
+  integration-tests:
+    runs-on: ubuntu-latest
+
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.1'
+          cache: true
+      
+      - name: Run integration tests
+        run: go test -v -tags=integration ./...
+        env:
+          BETFAIR_KEY_BASE64: ${{ secrets.BETFAIR_KEY_BASE64 }}
+          BETFAIR_CERT_BASE64: ${{ secrets.BETFAIR_CERT_BASE64 }}
+          BETFAIR_USERNAME: ${{ secrets.BETFAIR_USERNAME }}
+          BETFAIR_PASSWORD: ${{ secrets.BETFAIR_PASSWORD }}
+          BETFAIR_APP_KEY: ${{ secrets.BETFAIR_APP_KEY }}
+      
