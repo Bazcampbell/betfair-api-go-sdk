@@ -14,21 +14,20 @@ import (
 )
 
 func TestClientUsesGoodProxy(t *testing.T) {
-	_ = godotenv.Load("../.env")
-
-	proxy := os.Getenv("HTTP_PROXY")
-	if proxy == "" {
-		t.Fatalf("HTTP_PROXY not set")
+	err := godotenv.Load("../.env")
+	if err != nil {
+		t.Fatalf("unable to load .env file: %s", err)
 	}
 
+	proxy := os.Getenv("HTTP_PROXY")
 	key := os.Getenv("BETFAIR_KEY_BASE64")
 	cert := os.Getenv("BETFAIR_CERT_BASE64")
 	username := os.Getenv("BETFAIR_USERNAME")
 	password := os.Getenv("BETFAIR_PASSWORD")
 	appKey := os.Getenv("BETFAIR_APP_KEY")
 
-	if key == "" || cert == "" || username == "" || password == "" || appKey == "" {
-		t.Fatalf("Betfair credentials not set")
+	if key == "" || cert == "" || username == "" || password == "" || appKey == "" || proxy == "" {
+		t.Fatalf("Betfair credentials or proxy not set")
 	}
 
 	creds := types.BetfairCredentials{
@@ -58,7 +57,10 @@ func TestClientUsesGoodProxy(t *testing.T) {
 }
 
 func TestClientUsesNonAusProxy(t *testing.T) {
-	_ = godotenv.Load("../.env")
+	err := godotenv.Load("../.env")
+	if err != nil {
+		t.Fatalf("unable to load .env file: %s", err)
+	}
 
 	key := os.Getenv("BETFAIR_KEY_BASE64")
 	cert := os.Getenv("BETFAIR_CERT_BASE64")
