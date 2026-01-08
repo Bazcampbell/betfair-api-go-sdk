@@ -21,6 +21,7 @@ func TestClientInitFlow(t *testing.T) {
 	username := os.Getenv("BETFAIR_USERNAME")
 	password := os.Getenv("BETFAIR_PASSWORD")
 	appKey := os.Getenv("BETFAIR_APP_KEY")
+	proxy := os.Getenv("HTTP_PROXY")
 
 	// Skip instead of fail if creds aren’t present
 	if key == "" || cert == "" || username == "" || password == "" || appKey == "" {
@@ -33,6 +34,7 @@ func TestClientInitFlow(t *testing.T) {
 		AppKey:     appKey,
 		KeyString:  key,
 		CertString: cert,
+		ProxyUrl:   &proxy,
 	}
 
 	onErrorFunc := func(err error) {
@@ -160,5 +162,40 @@ func TestClientUsesBadProxy(t *testing.T) {
 
 	if !strings.Contains(err.Error(), "invalid port") {
 		t.Fatalf("uncaught bad proxy")
+	}
+}
+
+func TestClientUsesNonAusProxy(t *testing.T) {
+	_ = godotenv.Load("../.env")
+
+	key := os.Getenv("BETFAIR_KEY_BASE64")
+	cert := os.Getenv("BETFAIR_CERT_BASE64")
+	username := os.Getenv("BETFAIR_USERNAME")
+	password := os.Getenv("BETFAIR_PASSWORD")
+	appKey := os.Getenv("BETFAIR_APP_KEY")
+
+	if key == "" || cert == "" || username == "" || password == "" || appKey == "" {
+		t.Fatalf("Betfair credentials not set")
+	}
+
+	creds := types.BetfairCredentials{
+		Username:   username,
+		Password:   password,
+		AppKey:     appKey,
+		KeyString:  key,
+		CertString: cert,
+	}
+
+	onErrorFunc := func(err error) {
+		t.Fatalf("betfair client error: %v", err)
+	}
+
+	_, err := client.NewSession(creds, onErrorFunc)
+	if err == nil {
+		t.Fatal("expected BETTING_RESTRICTED_LOCATION error, got none")
+	}
+
+	if !strings.Contains(err.Error(), "BETTING_RESTRICTED_LOCATION") {
+		t.Fatalf("expected BETTING_RESTRICTED_LOCATION error, got: %v", err)
 	}
 }
