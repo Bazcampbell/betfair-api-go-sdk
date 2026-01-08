@@ -14,7 +14,7 @@ import (
 )
 
 func TestClientUsesGoodProxy(t *testing.T) {
-	_ = godotenv.Load(".env")
+	_ = godotenv.Load("../.env")
 
 	proxy := os.Getenv("HTTP_PROXY")
 	if proxy == "" {
