@@ -84,7 +84,7 @@ func TestClientUsesNonAusProxy(t *testing.T) {
 		t.Fatalf("betfair client error: %v", err)
 	}
 
-	_, err := client.NewSession(creds, onErrorFunc)
+	_, err = client.NewSession(creds, onErrorFunc)
 	if err == nil {
 		t.Fatal("expected BETTING_RESTRICTED_LOCATION error, got none")
 	}

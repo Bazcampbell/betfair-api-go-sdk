@@ -42,4 +42,5 @@ jobs:
           BETFAIR_USERNAME: ${{ secrets.BETFAIR_USERNAME }}
           BETFAIR_PASSWORD: ${{ secrets.BETFAIR_PASSWORD }}
           BETFAIR_APP_KEY: ${{ secrets.BETFAIR_APP_KEY }}
+          HTTP_PROXY: ${{ secrets.HTTP_PROXY }}
       
