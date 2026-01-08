@@ -14,7 +14,7 @@ import (
 )
 
 func TestClientUsesGoodProxy(t *testing.T) {
-	err := godotenv.Load("../.env")
+	err := godotenv.Load(".env")
 	if err != nil {
 		t.Fatalf("unable to load .env file: %s", err)
 	}
@@ -57,7 +57,7 @@ func TestClientUsesGoodProxy(t *testing.T) {
 }
 
 func TestClientUsesNonAusProxy(t *testing.T) {
-	err := godotenv.Load("../.env")
+	err := godotenv.Load(".env")
 	if err != nil {
 		t.Fatalf("unable to load .env file: %s", err)
 	}
