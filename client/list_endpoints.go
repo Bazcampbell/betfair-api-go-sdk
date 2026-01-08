@@ -3,9 +3,10 @@
 package client
 
 import (
-	"betfair-api-go-sdk/types"
-	"betfair-api-go-sdk/util"
 	"fmt"
+
+	"github.com/Bazcampbell/betfair-api-go-sdk/types"
+	"github.com/Bazcampbell/betfair-api-go-sdk/util"
 )
 
 const BASE_URL = "https://api.betfair.com/exchange/betting/rest/v1.0/"

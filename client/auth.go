@@ -3,13 +3,14 @@
 package client
 
 import (
-	"betfair-api-go-sdk/types"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+
+	"github.com/Bazcampbell/betfair-api-go-sdk/types"
 )
 
 const BASE_AUTH_URL = "https://identitysso-cert.betfair.com.au/api/"

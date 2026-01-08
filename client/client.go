@@ -5,7 +5,6 @@ package client
 // Handles state and authentication.
 
 import (
-	"betfair-api-go-sdk/types"
 	"context"
 	"crypto/tls"
 	"encoding/base64"
@@ -16,6 +15,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/Bazcampbell/betfair-api-go-sdk/types"
 )
 
 type BetfairClient struct {

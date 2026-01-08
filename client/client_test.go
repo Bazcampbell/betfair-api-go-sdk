@@ -3,11 +3,12 @@
 package client_test
 
 import (
-	"betfair-api-go-sdk/client"
-	"betfair-api-go-sdk/types"
 	"encoding/base64"
 	"strings"
 	"testing"
+
+	"github.com/Bazcampbell/betfair-api-go-sdk/client"
+	"github.com/Bazcampbell/betfair-api-go-sdk/types"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

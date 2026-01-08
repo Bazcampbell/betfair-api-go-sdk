@@ -3,10 +3,11 @@
 package main
 
 import (
-	"betfair-api-go-sdk/client"
-	"betfair-api-go-sdk/types"
 	"fmt"
 	"os"
+
+	"github.com/Bazcampbell/betfair-api-go-sdk/client"
+	"github.com/Bazcampbell/betfair-api-go-sdk/types"
 
 	"github.com/joho/godotenv"
 )

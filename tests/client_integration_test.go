@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"betfair-api-go-sdk/client"
-	"betfair-api-go-sdk/types"
+	"github.com/Bazcampbell/betfair-api-go-sdk/client"
+	"github.com/Bazcampbell/betfair-api-go-sdk/types"
 
 	"github.com/joho/godotenv"
 )

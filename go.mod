@@ -1,4 +1,4 @@
-module betfair-api-go-sdk
+module github.com/Bazcampbell/betfair-api-go-sdk
 
 go 1.24.1
 
