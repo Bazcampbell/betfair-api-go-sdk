@@ -53,7 +53,7 @@ func (b *BetfairClient) login() (string, error) {
 		return loginResp.SessionToken, nil
 	}
 
-	return "", fmt.Errorf("malformed response: %s, token: %s", loginResp.Status, loginResp.SessionToken)
+	return "", fmt.Errorf("malformed response: %s, token: %s, body: %s", loginResp.Status, loginResp.SessionToken, string(body))
 }
 
 // Returns error and assigns session token

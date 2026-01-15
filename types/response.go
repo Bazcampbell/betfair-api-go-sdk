@@ -49,6 +49,9 @@ type ListMarketCataloguesResponse struct {
 	Runners         []Runner `json:"runners,omitempty"`
 }
 
+type ListMarketSelectionsResponse struct {
+}
+
 type Runner struct {
 	SelectionId     int     `json:"selectionId"`
 	RunnerName      string  `json:"runnerName"`
